@@ -8,9 +8,6 @@ const os = require('os');
 const app = express();
 const upload = multer({ dest: os.tmpdir() }); // Temporary directory for uploads
 
-ffmpeg.setFfmpegPath('/home/site/wwwroot/ffmpeg'); // Correct path to the ffmpeg binary
-ffmpeg.setFfprobePath('/home/site/wwwroot/ffprobe'); // Correct path to the ffprobe binary
-
 // Define supported formats
 const SUPPORTED_FORMATS = ['mp4', 'mkv', 'mov', 'avi', 'flv', 'webm', 'wmv'];
 
@@ -38,38 +35,38 @@ app.post('/compress-video', upload.single('video'), (req, res) => {
 
     // Start the compression
     ffmpeg(inputFilePath)
-        .output(outputFilePath)
-        .videoCodec('libx264') // Codec for high compression and compatibility
-        .outputOptions([
-            '-crf 28', // Adjust CRF for optimal quality (lower CRF = better quality)
-            '-preset veryfast', // Use veryfast preset for quicker compression
-        ])
-        .on('start', (commandLine) => {
-            console.log('FFmpeg process started:', commandLine); // Log FFmpeg command
-        })
-        .on('progress', (progress) => {
-            console.log('Processing:', progress); // Log progress
-        })
-        .on('end', () => {
-            console.log('Compression finished successfully');
-            res.download(outputFilePath, 'compressed_video.mp4', (err) => {
-                fs.unlinkSync(inputFilePath); // Cleanup input file
-                fs.unlinkSync(outputFilePath); // Cleanup output file
-                if (err) {
-                    console.error('Error sending compressed file:', err);
-                    res.status(500).send({ error: 'Error sending compressed video' });
-                }
-            });
-        })
-        .on('error', (err) => {
-            console.error('FFmpeg Error:', err.message); // Log detailed FFmpeg error
+    .output(outputFilePath)
+    .videoCodec('libx264') // Codec for high compression and compatibility
+    .outputOptions([
+        '-crf 28', // Adjust CRF for optimal quality (lower CRF = better quality)
+        '-preset veryfast', // Use veryfast preset for quicker compression
+    ])
+    .on('start', (commandLine) => {
+        console.log('FFmpeg process started:', commandLine); // Log FFmpeg command
+    })
+    .on('progress', (progress) => {
+        console.log('Processing:', progress); // Log progress
+    })
+    .on('end', () => {
+        console.log('Compression finished successfully');
+        res.download(outputFilePath, 'compressed_video.mp4', (err) => {
             fs.unlinkSync(inputFilePath); // Cleanup input file
-            if (fs.existsSync(outputFilePath)) {
-                fs.unlinkSync(outputFilePath); // Cleanup output file if it exists
+            fs.unlinkSync(outputFilePath); // Cleanup output file
+            if (err) {
+                console.error('Error sending compressed file:', err);
+                res.status(500).send({ error: 'Error sending compressed video' });
             }
-            res.status(500).json({ error: 'Error compressing video.', details: err.message });
-        })
-        .run();
+        });
+    })
+    .on('error', (err) => {
+        console.error('FFmpeg Error:', err.message); // Log detailed FFmpeg error
+        fs.unlinkSync(inputFilePath); // Cleanup input file
+        if (fs.existsSync(outputFilePath)) {
+            fs.unlinkSync(outputFilePath); // Cleanup output file if it exists
+        }
+        res.status(500).json({ error: 'Error compressing video.', details: err.message });
+    })
+    .run();
 });
 
 const PORT = process.env.PORT || 3000;
