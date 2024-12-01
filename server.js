@@ -8,9 +8,8 @@ const os = require('os');
 const app = express();
 const upload = multer({ dest: os.tmpdir() }); // Temporary directory for uploads
 
-// Set custom paths for FFmpeg and FFprobe
-ffmpeg.setFfmpegPath(path.join(__dirname, 'wwwroot', 'ffmpeg')); // Replace 'wwwroot' with the directory where FFmpeg is uploaded
-ffmpeg.setFfprobePath(path.join(__dirname, 'wwwroot', 'ffprobe')); // Replace 'wwwroot' with the directory where FFprobe is uploaded
+ffmpeg.setFfmpegPath('/home/site/wwwroot/ffmpeg'); // Correct path to the ffmpeg binary
+ffmpeg.setFfprobePath('/home/site/wwwroot/ffprobe'); // Correct path to the ffprobe binary
 
 // Define supported formats
 const SUPPORTED_FORMATS = ['mp4', 'mkv', 'mov', 'avi', 'flv', 'webm', 'wmv'];
